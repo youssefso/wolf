@@ -83,17 +83,19 @@ void	ft_fill_map(int **map, t_vi dim, char *str)
 		y++;
 	}
 }
-int	**ft_read_file(char *file_name)
+t_map ft_read_file(char *file_name)
 {
 	int **map;
 	char *str;
 	t_vi dim;
-	int i;
+	t_map m;
 
 	str = ft_file(file_name);
 	dim = ft_check_lines(str);
 	map = ft_alloc_map(dim.y, dim.x);
 	ft_fill_map(map, dim, str);
 	ft_puttab(map, dim.y, dim.x);
-	return NULL;
+	m.map = map;
+	m.dim = dim;
+	return m;
 }

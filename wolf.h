@@ -21,20 +21,27 @@ typedef struct	s_vi
 }				t_vi;
 typedef struct	s_player
 {
-	t_vi	pos;
+	t_vf	pos;
 	t_vf	dir;
 	t_vf	dir_colum;
 }				t_player;
 
+typedef struct	s_map
+{
+	int		**map;
+	t_vi	dim;
+}				t_map;
+
 typedef struct	s_p
 {
-	void	*win;
-	void		*img;
-	void	*init;
+	void			*win;
+	void			*img;
+	void			*init;
 	unsigned int	*data;
-	t_player	player;
+	t_player		player;
+	t_map			map;
 }				t_p;
 
-int	**ft_read_file(char *file_name);
+t_map ft_read_file(char *file_name);
 
 #endif
