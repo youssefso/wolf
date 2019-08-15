@@ -5,8 +5,20 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ymoukhli <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/08/15 20:36:44 by ymoukhli          #+#    #+#             */
+/*   Updated: 2019/08/15 21:28:16 by ymoukhli         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ymoukhli <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/04 18:16:33 by ymoukhli          #+#    #+#             */
-/*   Updated: 2019/08/15 15:50:21 by ymoukhli         ###   ########.fr       */
+/*   Updated: 2019/08/15 20:36:14 by ymoukhli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +26,14 @@
 #define mapWidth 24
 #define mapHeight 24
 
+void	ft_light_pixel(t_p *p, int x, int y, int col)
+{
+	int i;
+	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGTH)
+		return ;
+	i = y * HEIGTH + x;
+	p->data[i] = col;
+}
 void	ft_mlx_init(t_p *p)
 {
 	int b_p;
@@ -237,9 +257,14 @@ void	ft_draw_colum(double distance, double plane_distance, t_p *p, int x)
 		y = HEIGTH / 2 - (wall_height / 2);
 		y_max = HEIGTH / 2 + (wall_height / 2);
 		while (y < y_max)
-			mlx_pixel_put(p->init, p->win, x, y++, 0xFFFFFF);
+			ft_light_pixel(p, x, y++, 0xffffff);
 }
 
+double 	ft_true_distance(double distance, double alpha)
+{
+	distance = distance * cos(0.523599);
+	return distance;
+}
 void	ft_loop(t_player player, t_map map, t_p *param)
 {
 	int x;
@@ -255,8 +280,6 @@ void	ft_loop(t_player player, t_map map, t_p *param)
 
 	yy = (int)(player.pos.y / 64);
 	xx = (int)(player.pos.x / 64);
-//	printf("map.x %d, map.y %d\n", xx, yy);
-//	printf("player.x %f player.y %f \n",player.pos.x, player.pos.y);
 	if (map.map[yy][xx] == 0)
 		player_check = player.pos;
 	else
@@ -271,17 +294,23 @@ void	ft_loop(t_player player, t_map map, t_p *param)
 	i = 0;
 	while (x < WIDTH)
 	{
-		t1 = 1e20;
-		t2 = 1e20;
+		printf("x ,%f ** y ,%f\n",player.pos.x / 64,player.pos.y / 64);
 		player.dir_colum = vec_rot(player.dir, -0.523599 + i);
 		alpha = ft_alpha(player.dir_colum);
 		t1 = ft_vertical_check(player, alpha, map);
 		t2 = ft_horizontal_check(player, alpha, map);
-		t1 = ft_min_value(t1, t2);
-		ft_draw_colum(t1, p_dist, param, x);
-		i += ang_colum;
-		x++;
+		if (t1 == 1e30 && t2 == 1e30)
+			x++;
+		else
+		{
+			t1 = ft_min_value(t1, t2);
+		//	t1 = ft_true_distance(t1, alpha);
+			ft_draw_colum(t1, p_dist, param, x);
+			i += ang_colum;
+			x++;
+		}
 	}
+	mlx_put_image_to_window(param->init, param->win, param->img, 0, 0);
 }
 void	ft_init(t_p *p, t_map map)
 {
@@ -310,7 +339,7 @@ int		t_kees(int key, t_p *p)
 		p->player.dir = vec_rot(p->player.dir, -0.1);
 	if (key == 53)
 		exit(0);
-	mlx_clear_window(p->init, p->win);
+	ft_bzero(p->data, WIDTH * HEIGTH * 4);
 	ft_loop(p->player, p->map, p);
 	return (1);
 }
