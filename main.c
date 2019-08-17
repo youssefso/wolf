@@ -5,26 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ymoukhli <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/08/15 20:36:44 by ymoukhli          #+#    #+#             */
-/*   Updated: 2019/08/15 21:28:16 by ymoukhli         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ymoukhli <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/04 18:16:33 by ymoukhli          #+#    #+#             */
-/*   Updated: 2019/08/15 20:36:14 by ymoukhli         ###   ########.fr       */
+/*   Updated: 2019/08/17 15:19:18 by ymoukhli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "wolf.h"
-#define mapWidth 24
-#define mapHeight 24
 
 void	ft_light_pixel(t_p *p, int x, int y, int col)
 {
@@ -134,31 +120,34 @@ double	ft_min_value(double t1, double t2)
 void	ft_setvertical_variable(t_player player,t_vf *grid_point, t_vf *step, float alpha)
 {
 	t_vf dir;
+	float x;
 
 	dir = player.dir_colum;
-	//printf("dir x: %f, y %f\n", dir.x, dir.y);
 	if (dir.x >= 0)
 	{
 		(*grid_point).x =  (int)(player.pos.x / 64) * 64 + 64;
+		x = grid_point->x;
 		(*step).x = 64;
 	}
 	else
 	{
 		(*grid_point).x = (int)(player.pos.x / 64) * 64 - 1;
+		x = grid_point->x + 1;
 		if ((*grid_point).x < 0)
 			(*grid_point).x = 0;
 		(*step).x = -64;
 	}
 	if (dir.y >= 0)
 	{
-		(*grid_point).y = player.pos.y + (fabsf(player.pos.x - (*grid_point).x) * tan(alpha));
+		(*grid_point).y = player.pos.y + (fabsf(player.pos.x - x) * tan(alpha));
 		(*step).y = 64 * tan(alpha);
 	}
 	else
 	{
-		(*grid_point).y = player.pos.y - (fabsf(player.pos.x - (*grid_point).x) * tan(alpha));
+		(*grid_point).y = player.pos.y - (fabsf(player.pos.x - x) * tan(alpha));
 		(*step).y = - 64 * tan(alpha);
-	} if (grid_point->x < 0)
+	}
+	if (grid_point->x < 0)
 		grid_point->x = 0;
 	if (grid_point->y < 0)
 		grid_point->y = 0;
@@ -167,27 +156,30 @@ void	ft_setvertical_variable(t_player player,t_vf *grid_point, t_vf *step, float
 void	ft_sethorizontal_variable(t_player player,t_vf *grid_point, t_vf *step, float alpha)
 {
 	t_vf	dir;
+	float	y;
 
 	dir = player.dir_colum;
 	if (dir.y >= 0)
 	{
 		grid_point->y = (int)(player.pos.y /64) * 64 + 64;
+		y = grid_point->y;
 		step->y = 64;
 	}
 	else
 	{
 		grid_point->y = (int)(player.pos.y / 64) * 64 - 1;
+		y = grid_point->y + 1;
 		step->y = -64;
 	}
 	if (dir.x >= 0)
 	{
-		grid_point->x = player.pos.x + (fabsf(player.pos.y - grid_point->y) / tan(alpha));
+		grid_point->x = player.pos.x + (fabsf(player.pos.y - y) / tan(alpha));
 		step->x = 64 / tan(alpha);
 	}
 	else
 	{
-		grid_point->x = player.pos.x - (fabsf(player.pos.y - grid_point->y) / tan(alpha));
-		step->x = -64 / tan(alpha);
+		grid_point->x = player.pos.x - (fabsf(player.pos.y - y) / tan(alpha));
+		step->x = - 64 / tan(alpha);
 	}
 	if (grid_point->x < 0)
 		grid_point->x = 0;
@@ -195,7 +187,7 @@ void	ft_sethorizontal_variable(t_player player,t_vf *grid_point, t_vf *step, flo
 		grid_point->y = 0;
 }
 
-double	ft_vertical_check(t_player player, float alpha, t_map map)
+double	ft_vertical_check(t_player player, float alpha, t_map map, int xx)
 {
 	t_vf	grid_point;
 	t_vf	step;
@@ -203,25 +195,27 @@ double	ft_vertical_check(t_player player, float alpha, t_map map)
 	double distance = 1e30;
 	int x;
 	int y;
-	int count = 0 ;
+	int count = 0;
 
 	hit = 0;
 	ft_setvertical_variable(player, &grid_point, &step,alpha);
 	while (hit == 0 && grid_point.y > 0 && grid_point.y < map.dim.y * 64)
 	{
+		if (xx == WIDTH /2)
+		printf("point A = x %f, y %f\n", grid_point.x, grid_point.y);
 		x = (grid_point.x / 64);
 		y = (grid_point.y / 64);
 		if (map.map[y][x] != 0)
 		{
 			hit = 1;
-			distance = fabsf(player.pos.x - grid_point.x) / cos(alpha);
+			distance = fabsf(player.pos.y - grid_point.y) / sin(alpha);
 			break ;
 		}
 		grid_point = vec_add(grid_point, step);
 	}
 	return distance;
 }
-double	ft_horizontal_check(t_player player, float alpha, t_map map)
+double	ft_horizontal_check(t_player player, float alpha, t_map map, int xx)
 {
 	t_vf	grid_point;
 	t_vf	step;
@@ -234,6 +228,8 @@ double	ft_horizontal_check(t_player player, float alpha, t_map map)
 	ft_sethorizontal_variable(player, &grid_point, &step,alpha);
 	while (hit == 0 && grid_point.x > 0 && grid_point.x < map.dim.x * 64)
 	{
+		if (xx == WIDTH /2)
+		printf("point A = x %f, y %f\n", grid_point.x, grid_point.y);
 		x = (grid_point.x / 64);
 		y = (grid_point.y / 64);
 		if (map.map[y][x] != 0)
@@ -260,9 +256,9 @@ void	ft_draw_colum(double distance, double plane_distance, t_p *p, int x)
 			ft_light_pixel(p, x, y++, 0xffffff);
 }
 
-double 	ft_true_distance(double distance, double alpha)
+double 	ft_true_distance(double distance, double ang_column, int x)
 {
-	distance = distance * cos(0.523599);
+	distance = distance * cos(0.523599 - (x * ang_column));
 	return distance;
 }
 void	ft_loop(t_player player, t_map map, t_p *param)
@@ -283,9 +279,7 @@ void	ft_loop(t_player player, t_map map, t_p *param)
 	if (map.map[yy][xx] == 0)
 		player_check = player.pos;
 	else
-	{
 		player.pos = player_check;
-	}
 	param->player = player;
 	ang_colum = 60 / (double)WIDTH;
 	ang_colum = ft_rad(ang_colum);
@@ -294,23 +288,30 @@ void	ft_loop(t_player player, t_map map, t_p *param)
 	i = 0;
 	while (x < WIDTH)
 	{
-		printf("x ,%f ** y ,%f\n",player.pos.x / 64,player.pos.y / 64);
+		if (x == WIDTH / 2)
+		system("clear");
 		player.dir_colum = vec_rot(player.dir, -0.523599 + i);
 		alpha = ft_alpha(player.dir_colum);
-		t1 = ft_vertical_check(player, alpha, map);
-		t2 = ft_horizontal_check(player, alpha, map);
-		if (t1 == 1e30 && t2 == 1e30)
-			x++;
-		else
-		{
-			t1 = ft_min_value(t1, t2);
-		//	t1 = ft_true_distance(t1, alpha);
-			ft_draw_colum(t1, p_dist, param, x);
-			i += ang_colum;
-			x++;
-		}
+		t1 = ft_vertical_check(player, alpha, map, x);
+		t1 = ft_true_distance(t1, ang_colum, x);
+		if (x == WIDTH / 2)
+			printf("distance *t1*: %f\n", t1);
+		t2 = ft_horizontal_check(player, alpha, map,x);
+		t2 = ft_true_distance(t2, ang_colum, x);
+		if (x == WIDTH / 2)
+			printf("distance *t2*: %f\n", t2);
+		t1 = ft_min_value(t1, t2);
+		ft_draw_colum(t1, p_dist, param, x);
+		i += ang_colum;
+		x++;
 	}
 	mlx_put_image_to_window(param->init, param->win, param->img, 0, 0);
+	x = 0;
+	while (x < WIDTH)
+		mlx_pixel_put(param->init, param->win, x++, HEIGTH / 2, 0xff0000);
+	x = 0;
+	while (x < WIDTH)
+		mlx_pixel_put(param->init, param->win, WIDTH / 2, x++, 0xff0000);
 }
 void	ft_init(t_p *p, t_map map)
 {
@@ -319,20 +320,31 @@ void	ft_init(t_p *p, t_map map)
 	ply.pos = (t_vf){1,1};
 	ply.pos.x *= 64 + 32;
 	ply.pos.y *= 64 + 32;
-	ply.dir = (t_vf){1, 0};
+	ply.dir = (t_vf){0, -1};
 	ft_loop(ply, map, p);
 }
 
 int		t_kees(int key, t_p *p)
 {
+	int step;
+
+	step = 3;
 	if (key == 126 || key == 13)
-		p->player.pos = vec_add(p->player.pos, vec_mult(p->player.dir, 3));
+		p->player.pos = vec_add(p->player.pos, vec_mult(p->player.dir, step));
 	if (key == 125 || key == 1)
-		p->player.pos = vec_sub(p->player.pos, vec_mult(p->player.dir, 3));
+		p->player.pos = vec_sub(p->player.pos, vec_mult(p->player.dir, step));
 	if (key == 123 || key == 0)
-		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, 1.5708), -3));
+		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, 1.5708), -step));
+	if (key == 14)
+	{
+		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, 0.523599), step));
+	}
+	if (key == 12)
+	{
+		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, -0.523599), step));
+	}
 	if (key == 124 || key == 2)
-		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, 1.5708), 3));
+		p->player.pos = vec_add(p->player.pos, vec_mult(vec_rot(p->player.dir, 1.5708), step));
 	if (key == 40)
 		p->player.dir = vec_rot(p->player.dir, 0.1);
 	if (key == 38)
